@@ -1,0 +1,137 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+static int size=0;
+char decode[26][100];
+typedef struct element{
+	char ch;
+	int frequency;
+	struct element* left;
+	struct element* right;
+}element;
+void swap(element* arr,int i,int j){
+	element temp=arr[i];
+	arr[i]=arr[j];
+	arr[j]=temp;
+}
+
+void display(element* array){
+	if(array->left==NULL)
+	{
+		printf("In display : %c  %d\n",array->ch,array->frequency);
+		return;
+	}
+	else{
+		display(array->left);
+		display(array->right);;
+	}
+}
+void heapify(element* array,int pos){
+	//0-based indexing
+	int left=2*pos+1;
+	int right=2*pos+2;
+	int smallest=pos;
+	if(left<size && array[left].frequency <= array[smallest].frequency) smallest=left;
+	if(right<size && array[right].frequency <= array[smallest].frequency) smallest=right;
+	if(smallest!=pos){
+		swap(array,smallest,pos);
+		heapify(array,smallest);
+	}
+}
+
+void deletefun(element* array){
+	swap(array,0,size-1);
+	size--;
+	int i;
+	//should be heapified top to bottom
+	for(i=0;i<=size/2-1;i++) heapify(array,i);
+}
+element minEle(element* array){
+	element temp;
+	temp.frequency=array[0].frequency;
+	temp.ch=array[0].ch;
+	temp.right=array[0].right;temp.left=array[0].left;
+	deletefun(array);
+	return temp;
+}
+void insert(element* array,element ele){
+	array[size++]=ele;
+	int i;
+	for(i=size/2-1;i>=0;i--) heapify(array,i);
+
+}
+void print(element* arr,int n){
+	int i;
+	for(i=0;i<n;i++) printf("%c  %d\n",arr[i].ch,arr[i].frequency);
+	printf("\n");
+}
+int height(element *arr){
+	if(arr->left==NULL||arr->right==NULL)
+	return 1;
+	int left=1+height(arr->left);
+	int right=1+height(arr->right);
+	return left>right?left:right;
+}
+void HuffmanEncoding(element* array){
+	element first_min;
+	element second_min;
+	while(size > 1){
+		first_min=minEle(array);
+		second_min=minEle(array);
+		/*
+		if first_min->frequency is greater than that of second_min->frequency ,then first_min is inserted at the right of the new element
+		*/
+		element temp;
+		temp.ch='\0';
+		//display(&first_min);
+		//display(&second_min);
+		if(first_min.left!=NULL) printf("Left's left is %d  %c\n",first_min.left->frequency,first_min.left->ch);
+		if(first_min.right!=NULL) printf("left's right is %d   %c\n",first_min.right->frequency,first_min.right->ch);
+		if(second_min.left!=NULL) printf("right's left is %d   %c\n",second_min.left->frequency,second_min.left->ch);
+		if(second_min.right!=NULL) printf("right's right is %d  %c\n",second_min.right->frequency,second_min.right->ch);
+		if(second_min.right!=NULL && second_min.right->ch=='\0') printf("Internal left is %c right is %c\n",second_min.right->left->ch,second_min.right->right->ch);
+		temp.frequency=first_min.frequency+second_min.frequency;
+		if(first_min.frequency > second_min.frequency)
+		{
+			temp.left=&second_min;
+			temp.right=&first_min;
+			insert(array,temp);
+		}
+		else{
+			temp.left=&first_min;
+			temp.right=&second_min;
+			insert(array,temp);	
+		}
+		//print(array,size);
+	}
+	//display(&array[0]);
+	element* temp=&array[0];
+	
+	//printf("Height of the tree is %d ",height(&array[0]));
+	while(temp->right!=NULL){
+		printf("Frequency : %d\n ",temp->frequency);
+		temp=temp->right;
+	}
+	
+}
+int main(){
+	printf("Enter the string\n");
+	char string[100];
+	int freq[26],i,temp_count=0;
+	for(i=0;i<=25;i++) freq[i]=0;
+	scanf("%[^\n]",string);
+	for(i=0;i<strlen(string);i++) if(string[i]!=' ') freq[string[i]-'a']++;
+	for(i=0;i<=25;i++) if(freq[i]!=0) size++;//One can eliminate this loop if space is not a factor
+	element arr[size+1];
+	for(i=0;i<=25;i++){
+		if(freq[i]){
+			arr[temp_count].frequency=freq[i];
+			arr[temp_count].ch=(char)(i+'a');
+			arr[temp_count].left=arr[temp_count].right=NULL;
+			temp_count++;
+		}
+	}
+	for(i=size/2-1;i>=0;i--) heapify(arr,i);
+	HuffmanEncoding(arr);
+	return 0;
+}
