@@ -1,8 +1,8 @@
 #include<stdio.h>
 #include<stdbool.h>
 #include<stdlib.h>
-int size;
-int* board;
+int size;//size of the board
+int* board;//1-D array to store the column each queen is placed at
 int cnt=0;
 int abs(int a){
 	return a<0?-a:a;
@@ -26,6 +26,7 @@ void n_queens(int k){
 	}
 	for(i=0;i<size;i++){
 		if(check_safe(k,i)){
+			//placing kth queen at ith column is safe
 			board[k]=i;
 			n_queens(k+1);
 		}
