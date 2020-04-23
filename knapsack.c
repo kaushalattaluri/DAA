@@ -39,6 +39,7 @@ void knapsack_0_1(element* ele,int weight,int size){
 		}
 	}
 	print_path(ele,arr,size,weight);
+	for(i=0;i<=size;i++) free(arr[i]);
 }
 int main(){
 	int n,i,weight,profit;
