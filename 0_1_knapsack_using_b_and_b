@@ -53,16 +53,17 @@ void heapify(priority_queue* p,int idx){
 	}
 }
 
-void heapify2(priority_queue* p){
-	int i;
-	for(i=p->queue_size/2-1;i>=0;i--) heapify(p,i);
-}
+
 
 //To insert an element into the priority_queue
 void insert(priority_queue* p,Node ele){
-	p->array[p->queue_size]=ele;
 	p->queue_size++;
-	heapify2(p);
+	int idx=p->queue_size-1;
+	while(idx > 0 && ele.lower_bound >= p->array[(idx-1)/2].lower_bound){
+		p->array[idx]=p->array[(idx-1)/2];
+		idx=(idx-1)/2;
+	}	
+	p->array[idx]=ele;
 }
 
 //To remove the min element from the priority_queue
@@ -72,19 +73,18 @@ void remove_(priority_queue* p){
 	heapify(p,0);
 }
 
-
-//below two functions implement inbuilt quick sort
-//one can also do this using default bubble sort technique
-int comparator(const void* a,const void* b){
-	Item *x=(Item* )a;
-	Item *y=(Item* )b;
-	return (double)y->profit/y->weight - (double)x->profit/x->weight;
-}
-
 void sort(Item* arr){
-	qsort(arr,size,sizeof(arr[0]),comparator);
+	int i,j;
+	for(i=0;i<size;i++){
+		for(j=i+1;j<size;j++){
+			if((double)arr[i].profit/arr[i].weight < (double)arr[j].profit/arr[j].weight){
+				Item temp=arr[i];
+				arr[i]=arr[j];
+				arr[j]=temp;
+			}
+		}
+	}
 }
-
 //To calculate upper_bound ; it includes fractional weights too
 int calculate_upper_bound(int cp,int cw,int idx,Item* arr){
 	int profit=cp;
@@ -130,15 +130,20 @@ void knapsack(Item* arr){
 	global_best=(bool *)malloc(sizeof(bool)*(size+1));
 	for(i=0;i<size;i++) selection[i]=false; // Initially no items are selected
 	insert(p,current);//Insert the dummy first node
-	/*
-	uncomment this to check the sorted order of the items
-	for(i=0;i<size;i++) printf("weight = %d profit =%d\n",arr[i].weight,arr[i].profit);
-	*/
-	
+
+/*	uncomment this to check the sorted order of the items
+	for(i=0;i<size;i++) printf("idx = %d weight = %d profit =%d\n",arr[i].idx,arr[i].weight,arr[i].profit);
+*/
 	while(p->queue_size != 0){
 		current=p->array[0];//Get the node with minimum lower bound
 		remove_(p);
-		if(current.level!=-1)
+		if((current.upper_bound > global_lb || current.upper_bound >= global_lb_2) && current.level!=0){
+			//By additionally comparing it with global_lb_2 gives a chance of elimintating equal maximum profit paths
+			//you cannot continue;
+			continue;
+		}
+		
+		if(current.level!=0)
 			selection[current.level-1]=current.flag;
 		if(current.level==size){
 			//reached the final stage
@@ -151,11 +156,6 @@ void knapsack(Item* arr){
 			if(current.lower_bound < global_lb_2)
 				for(i=0;i<size;i++) global_best[arr[i].idx]=selection[i];
 			global_lb_2=min(global_lb_2,current.lower_bound);
-			continue;
-		}
-		if(current.upper_bound > global_lb && current.upper_bound >= global_lb_2){
-			//By additionally comparing it with global_lb_2 gives a chance of elimintating equal maximum profit paths
-			//you cannot continue;
 			continue;
 		}
 		right.upper_bound=calculate_upper_bound(current.cp,current.cw,current.level+1,arr);
@@ -184,16 +184,17 @@ void knapsack(Item* arr){
 		}
 		
 	   	/*uncomment to know the details of the current level items
-		  printf("current level= %d current lower bound=%d current.upper_bound=%d cp=%d cw=%d\n",current.level,current.lower_bound,current.upper_bound,current.cp,current.cw);
+		  printf("current level= %d current lower bound=%d current.upper_bound=%d cp=%d cw=%d flag=%d\n",current.level,current.lower_bound,current.upper_bound,current.cp,current.cw,current.flag);
 		  printf("left.lower_bound= %d left.level=%d left.upper_bound = %d right.lowerbound=%d right.level = %d right.upper_bound=%d\n",left.lower_bound,left.level,left.upper_bound,right.lower_bound,right.level,right.upper_bound);
-		  printf("left.cp = %d left.cw=%d right.cp = %d right.cw=%d\n",left.cp,left.cw,right.cp,right.cw);
+		  printf("left.cp = %d left.cw=%d right.cp = %d right.cw=%d\n\n",left.cp,left.cw,right.cp,right.cw);
 		*/
 		if(right.upper_bound <= global_lb&& global_lb!=0) insert(p,right);
 		if(left.upper_bound <= global_lb && global_lb!=0) insert(p,left);
+	
 	}
 	printf("The elements taken into the knapsack are \n");
 	for(i = 0 ; i< size; i++) global_best[i]==0?printf("0 "):printf("1 ");printf("\n");
-	printf("Maximum profit is %d",-global_lb);
+	printf("Maximum profit is %d",-global_lb_2);
 	free(p->array);free(global_best);
 }
 	
