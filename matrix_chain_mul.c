@@ -17,6 +17,12 @@ void matrix_mul(int* dimensions,int n){
 	for(i=0;i<=n;i++) tracker[i]=(int *)malloc(sizeof(int)*(n+1));
 	for(i=0;i<=n;i++) for(j=0;j<=n;j++) cost[i][j]=tracker[i][j]=0;
 
+	
+	//based on formula ans => cost[i,j] = min ( i <= k < j { m[i,k] + m[k+1 , j]+ p(i-1)*p(k)*p(j) 
+	//here we are trying to find cost[1,n]
+	//for len = 2 to len <= n => it indicates that we are trying to check for all the possible chain lengths
+	//i.e a1 * a2 , a3 * a4  (length two ) , a2 * a3 * a4 (length three )
+	
 	for(len=2;len<=n;len++){
 		for(i=1;i<=n-len+1;i++){
 			j=i+len-1;
