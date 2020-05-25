@@ -163,7 +163,6 @@ class knapsack{
 		System.out.println("\nMaximum profit is "+(-finalLB));
 	}
 		
-	//Driver code
 	public static void main(String args[]){
 		size=4;
 		capacity=15;
