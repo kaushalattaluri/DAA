@@ -85,7 +85,7 @@ int main(){
 		}
 	}
 
-	printf("Enter the source vertex\n");
+	printf("Enter the source vertex\nNOTE : follow 0-based indexing\n");
 	scanf("%d",&src);
 	dijkstra(arr, n, src);
 	return 0;
